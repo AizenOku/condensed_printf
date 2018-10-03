@@ -6,47 +6,37 @@
 /*   By: ihuang <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/13 22:12:52 by ihuang            #+#    #+#             */
-/*   Updated: 2018/09/26 00:48:51 by ihuang           ###   ########.fr       */
+/*   Updated: 2018/09/30 23:15:02 by ihuang           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "b_printf.h"
 
-char	*convert(unsigned long num, int base)
+int		handle(const char c, va_list list)
 {
-	char	*rep;
-	char	*buff;
-	char	*ptr;
+	char			*s;
+	char			ch;
 
-	if (num == 0)
-		return ("0");
-	rep = "0123456789abcdef";
-	buff = (char*)malloc(sizeof(char) * 50);
-	buff[49] = '\0';
-	ptr = &buff[49];
-	*ptr = '\0';
-	while (num != 0)
+	if (c == 'c' || c == '%')
 	{
-		ptr--;
-		*ptr = *(rep + (num % base));
-		num /= base;
+		if (c == '%')
+			ch = '%';
+		else
+			ch = va_arg(list, int);
+		write(1, &ch, 1);
+		return (1);
 	}
-	free(buff);
-	return (ptr);
+	else if (c == 's')
+	{
+		if ((s = va_arg(list, char*)) != NULL)
+			return (ft_putstr(s));
+		else
+			return (ft_putstr("(null)"));
+	}
+	return (handle2(c, list));
 }
 
-int		print_memory(va_list list)
-{
-	void			*ptr;
-
-	write(1, "0x", 2);
-	ptr = va_arg(list, void*);
-	if (ptr == NULL)
-		return (2 + ft_putstr("0"));
-	return (2 + ft_putstr(convert((unsigned long)ptr, 16)));
-}
-
-int		handle_int(const char c, va_list list)
+int		handle2(const char c, va_list list)
 {
 	int				i;
 	unsigned int	u;
@@ -57,7 +47,7 @@ int		handle_int(const char c, va_list list)
 		if (i < 0)
 		{
 			write(1, "-", 1);
-			return (1 + ft_putstr(convert((unsigned int)i, 10)));
+			return (1 + ft_putstr(convert((unsigned int)-i, 10)));
 		}
 		else
 			return (ft_putstr(convert((unsigned int)i, 10)));
@@ -75,29 +65,13 @@ int		handle_int(const char c, va_list list)
 	return (print_memory(list));
 }
 
-int		handle(const char c, va_list list)
+int		print_memory(va_list list)
 {
-	char			*s;
-	char			ch;
+	void			*ptr;
 
-	if (c == '%')
-	{
-		write(1, "%", 1);
-		return (1);
-	}
-	else if (c == 'c')
-	{
-		ch = va_arg(list, int);
-		write(1, &ch, 1);
-		return (1);
-	}
-	else if (c == 's')
-	{
-		if ((s = va_arg(list, char*)) != NULL)
-			return (ft_putstr(s));
-		else
-			return (ft_putstr("(null)"));
-	}
-	else
-		return (handle_int(c, list));
+	write(1, "0x", 2);
+	ptr = va_arg(list, void*);
+	if (ptr == NULL)
+		return (2 + ft_putstr("0"));
+	return (2 + ft_putstr(convert((unsigned long)ptr, 16)));
 }

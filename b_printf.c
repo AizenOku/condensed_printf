@@ -6,7 +6,7 @@
 /*   By: ihuang <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/15 16:35:53 by ihuang            #+#    #+#             */
-/*   Updated: 2018/09/26 00:48:50 by ihuang           ###   ########.fr       */
+/*   Updated: 2018/10/01 15:26:00 by ihuang           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,26 @@
 
 int		parse_format(const char *fmt, va_list list)
 {
-	int		i;
 	int		count;
 
-	i = 0;
 	count = 0;
-	while (fmt[i])
+	while (*fmt)
 	{
-		while (fmt[i] && fmt[i] != '%')
+		while (*fmt && *fmt != '%')
+			count += ft_write(*fmt++);
+		if (*fmt == '%')
 		{
-			write(1, &fmt[i++], 1);
-			count++;
-		}
-		if (fmt[i] == '%')
-		{
-			if (ft_strchr("scdipoux", fmt[++i]))
-				count += handle(fmt[i++], list);
+			fmt++;
+			if (*fmt == '\0')
+			{
+				count += ft_write('%');
+				continue ;
+			}
+			if (ft_strchr("scdiouxp%", *fmt))
+				count += handle(*fmt, list);
 			else
-				return (-1);
+				count += ft_write(*fmt);
+			fmt++;
 		}
 	}
 	return (count);
@@ -43,12 +45,7 @@ int		b_printf(const char *restrict format, ...)
 	int		res;
 
 	va_start(list, format);
-	if ((res = parse_format(format, list)) == -1)
-	{
-		ft_putstr("Invalid operator");
-		va_end(list);
-		return (-1);
-	}
+	res = parse_format(format, list);
 	va_end(list);
 	return (res);
 }
